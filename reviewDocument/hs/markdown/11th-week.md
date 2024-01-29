@@ -58,7 +58,7 @@ RuntimeException (일반적인 상위 클래스):
 여러 Runtime Exception들의 상위 클래스로, 일반적으로 프로그래머의 실수나 잘못된 로직에 의해 발생하는 예외들을 포함합니다.
 
 
-* 일반 예외 (Exception)
+### 예외 (Exception)
 컴파일러가 예외 처리 코드 여부를 검사하는 예외
     * Checked Exception Exception 클래스를 상속하면서 RuntimeException 클래스를 상속하지 않는 예외
     * 실행 예외 (RuntimeException)
@@ -235,7 +235,8 @@ public void twoException() {
 
 ## throws
 
-> 메소드 내부에서 예외가 발생할 때 try-catch 블록으로 예외를 처리하는 것이 아닌, 메소드를 호출한 곳으로 예외를 넘길 수 있다. 
+>[!NOTE]
+>메소드 내부에서 예외가 발생할 때 try-catch 블록으로 예외를 처리하는 것이 아닌, 메소드를 호출한 곳으로 예외를 넘길 수 있다. 
 
 ```java
 리턴타입 메소드명(매개변수,...) throws 예외클래스1, 예외클래스2 ... {
