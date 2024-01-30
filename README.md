@@ -48,7 +48,7 @@
 
 
 ## contributor
-비프, Jay, 하리보
+비프, Jay, 하리보, 생각하는 라이언, 테스커, GU, 잡잡
 
 <br/><br/><br/>
 
