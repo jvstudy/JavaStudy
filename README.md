@@ -39,6 +39,12 @@
 
 
 <br/>
+
+## PR 방식
+
+- 자유
+
+<br/><br/><br/>
   
 ## Commit Message Convention
 
