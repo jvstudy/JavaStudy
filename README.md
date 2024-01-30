@@ -40,11 +40,12 @@
 
 <br/>
   
-## PR 방식
+## Commit Message Convention
 
 - [스터디한 주] commit message : [1주차] 자바 변수
 
-<br/>
+<br/><br/><br/>
+
 
 ## contributor
 비프, Jay, 하리보
@@ -52,3 +53,7 @@
 <br/><br/><br/>
 
 #### [👉 스터디정보 상세보기](https://community.programmers.co.kr/study/1519)
+
+
+
+
