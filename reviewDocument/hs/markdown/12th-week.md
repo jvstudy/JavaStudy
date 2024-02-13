@@ -37,8 +37,8 @@ implements Serializable, Comparable<String>, CharSequence, Constable, ConstantDe
 
 ### java.base 모듈
 
->[!NOTE]/
-> java.base 모듈은 모든 모듈이 의존하는 기본 모듈이다. require 하지 않아도 사용할 수 있다.
+>[!NOTE]
+>java.base 모듈은 모든 모듈이 의존하는 기본 모듈이다. require 하지 않아도 사용할 수 있다.
 
 
 #### java.base의 주요 패키지와 용도
@@ -103,7 +103,7 @@ implements Serializable, Comparable<String>, CharSequence, Constable, ConstantDe
 
 #### Object 클래스
 
->[!NOTE]/
+>[!NOTE]
 >`java.lang` 패키지에 속해 있다.
 
 ```markdown
@@ -118,7 +118,7 @@ implements Serializable, Comparable<String>, CharSequence, Constable, ConstantDe
 
 <br>
 
->![important]/
+>[!important]
 > 클래스를 선언할 때 모든 클래스는 직간접적으로 java.lang 의 Object 클래스를 상속받게 된다.
 
 |메소드|용도|
@@ -221,14 +221,14 @@ equal(): true ==: true
 
 <br>
 
-> [!NOTE]/
+>[!NOTE]
 > Java에서 문자열 리터럴은 상수 풀(constant pool)에 저장되어 재사용되기 때문에 equals와 == 모두 동일하게 True 로 리턴된다.
 
 <br>
 
 #### System 클래스
 
->[!NOTE]/
+>[!NOTE]
 >`java.lang` 패키지에 속해 있다. 운영체제의 일부 기능을 이용할 수 있다.
 
 
@@ -267,7 +267,7 @@ public class SystemExample {
 
 #### 문자열 클래스
 
-> [!NOTE]/
+>[!NOTE]
 >`java.lang` 패키지에 속해 있다.
 
 ### 주요 문자열 클래스
@@ -301,7 +301,7 @@ public class StringExample {
 
 #### 포장 클래스
 
-> [!NOTE]/
+>[!NOTE]
 >`java.lang` 패키지에 속해 있다.
 
 ```java
@@ -324,7 +324,7 @@ public class WrapperExample {
 
 #### 수학 클래스
 
-> [!NOTE]/
+>[!NOTE]
 >`java.lang` 패키지에 속해 있다.
 
 ```java
@@ -344,8 +344,8 @@ public class MathExample {
 
 #### 날짜와 시간 클래스
 
-> [!NOTE]/
-> `java.time` 패키지에 속한 클래스.
+>[!NOTE]
+>`java.time` 패키지에 속한 클래스.
 
 ```java
 import java.time.LocalDate;
@@ -360,8 +360,8 @@ public class DateTimeExample {
 
 #### 형식 클래스
 
-> [!NOTE]/
-> `java.text` 패키지에 속해 있다.
+>[!NOTE]
+>`java.text` 패키지에 속해 있다.
 
 ```java
 import java.text.SimpleDateFormat;
@@ -379,8 +379,8 @@ public class FormatExample {
 
 #### 정규 표현식 클래스
 
-> [!NOTE]/
-> `java.util.regex` 패키지에 속해 있다. 정규 표현식을 사용하여 문자열을 검색하거나 조작하는 데 사용된다.
+>[!NOTE]
+>`java.util.regex` 패키지에 속해 있다. 정규 표현식을 사용하여 문자열을 검색하거나 조작하는 데 사용된다.
 
 ```java
 import java.util.regex.Matcher;
@@ -407,8 +407,8 @@ public class RegexExample {
 
 #### 리플렉션
 
-> [!NOTE]/
-> `java.lang.reflect` 패키지에 속해 있다. 실행 중인 프로그램의 클래스, 메서드, 필드 등의 정보를 동적으로 가져오고 조작하는 기능을 제공
+>[!NOTE]
+>`java.lang.reflect` 패키지에 속해 있다. 실행 중인 프로그램의 클래스, 메서드, 필드 등의 정보를 동적으로 가져오고 조작하는 기능을 제공
 
 ```java
 public class ReflectionExample {
@@ -424,8 +424,8 @@ public class ReflectionExample {
 
 #### 어노테이션
 
-> [!NOTE]/
-> `java.lang.annotation` 패키지에 속해 있다. 클래스 또는 인터페이스 정보를 컴파일러에게 전달하거나 런타임에 특정 작업을 수행하기 위해 활용
+>[!NOTE]
+>`java.lang.annotation` 패키지에 속해 있다. 클래스 또는 인터페이스 정보를 컴파일러에게 전달하거나 런타임에 특정 작업을 수행하기 위해 활용
 
 * 하나의 타입이다.
 
