@@ -285,7 +285,7 @@ DataOutputStream dos = new DataOutputStream(바이트 출력 스트림);
 >텍스트 데이터를 간편하게 출력하는 스트림이다. PrintStream과 PrintWriter 클래스를 사용하여 포맷팅된 텍스트를 출력할 수 있다. PrintStream과 PrintWriter는 프린터와 유사하게 출력하는 pint(), println(), printf() 메소드를 가지고 있는 보조 스트림이다.
 
 
-> [!NOTE] println
+> [!NOTE] println
 > System.out.println() 에서 out은 PrintStream 타입이기 때문에 println()을 사용한다. 매개값의 타입에 따라 오버로딩되어 있다.
 
 ==**PrintStream은 바이트 출력 스트림과 연결되고, PrintWriter는 문자 출력 스트림과 연결된다.**==
@@ -513,7 +513,7 @@ FileInputStream fis = new FileInputStream(file);
 | 디렉토리 탐색    | list, newDirectoryStream, walk |
 | 데이터 입출력    | newInputStream 등               |
 
-> [!NOTE] Path 객체
+> [!NOTE] Path 객체
 > 위 메소드들은 매개값으로 Path 객체를 받는다. Path 객체는 파일이나 디렉토리를 찾기 위한 경로 정보를 가지고 있는데, 정적 메소드인 get() 메소드로 다음과 같이 얻을 수 있다.
 
 ```java
@@ -565,29 +565,115 @@ public class FileInfo {
 
 - 네트워크 기초
 
+> [!NOTE] 네트워크란?
+> 여러 컴퓨터들을 통신 **회선**으로 연결한 것을 말한다.
+> WAN(Wide Area Network) 은 LAN을 연결한 회선으로 이것을 인터넷(INTERNET)이라 부른다. LAN(Local Area Network) 은 가정, 회사 등 특정 영역에 존재하는 컴퓨터를 연결하고 있다.
 
 - IP 주소 얻기
+
+> [!NOTE] IP 구조
+> IP 주소는 네트워크 어댑터(LAN 카드)마다 할당된다. 컴퓨터 장착한 개수만큼 할당받을 수 있다. 
+> IP 주소는 xxx.xxx.xxx.xxx 형식으로 출력된다. 여기서 xxx는 0~255 사이의 정수다.
+> 인터넷은 공인 IP로만 접속할 수 있는데, 일반 가정집의 경우 예로 KT 인터넷을 설치하게 될 경우 모뎀을 제공받는데 이것이 NAT라는 기술을 통해 사설 IP를 공인 IP주소로 변환시킨다.
+
+**아이피 주소를 확인하는 명령어**
+```bash
+// 윈도우
+ipconfig
+
+// 맥
+ifconfig
+```
+
+**Port 번호**
+
+> [!NOTE] PORT 구조
+> IP는 네트워크 어댑터까지만 갈 수 있는 정보이기 때문에, 컴퓨터 내부에서 실행하는 서버 프로그램을 연결하기 위해서는 PORT 번호가 필요하다.
+> PORT는 운영체제가 관리하는 서버 프로그램의 연결 번호로 서버는 시작할 때 특정 PORT 번호에 바인딩한다. 
+> 클라이언트도 서버에서 보낸 정보를 받기 위해 PORT 번호를 사용하지만 운영체제가 자동으로 부여하는 번호를 사용한다. 이 번호는 클라이언트가 서버로 요청할 때 함께 전송되어 서버가 클라이언트로 데이터를 보낼 때 사용된다.
+
+| 구분명                             | 범위          | 설명                                            |
+| ------------------------------- | ----------- | --------------------------------------------- |
+| Well Know Port Numbers          | 0~1023      | 국제인터넷주소관리기구가 특정 애플리케이션용으로 미리 예약한 Port         |
+| Registered Port Numbers         | 1024~49151  | 회사에서 등록해서 사용할 수 있는 Port                       |
+| Dynamic Or Private Port Numbers | 49152~65535 | 운영체제가 부여하는 동적 Port 또는 개인적인 목적으로 사용할 수 있는 Port |
+
+**자바로 아이피 주소 얻기**
+```java
+InetAddress ia = InetAddress.getLocalHost();
+
+InetAddress ia = InetAddress.getByName(String domainName);
+InetAddress[] iaArr = InetAddress.getAllByName(String domainName);
+
+String ip = InetAddress.getHostAddress();
+```
+
 - TCP 네트워킹
+
+
+> [!NOTE] 전송용 프로토콜 TCP
+> IP 주소로 프로그램들이 통신할 때 약속된 데이터 전송 규약이다. TCP와 UDP가 있으며 
+> TCP는 IP와 함께 사용하기 때문에 TCP/IP 라고도 한다. 
+> TCP는 웹 브라우저가 웹 서버에 연결할 때 사용되며 이메일 전송, 파일 전송, DB 연동에도 사용된다. 
+
+
+> [!IMPORTANT] 소켓의 개념
+> - **소켓(Socket)**: 소켓은 네트워크 상의 두 노드 간에 통신 채널을 열기 위한 엔드포인트이며, 소켓을 통해 데이터를 주고받을 수 있다.
+>- **TCP 소켓**: 연결 지향적 통신을 제공한다. 데이터의 전송을 보장하고, 순서대로 도착하도록 한다. 소켓은 `java.net.Socket` 클래스로 표현된다.
+>- **UDP 소켓**: 비연결 지향적 통신을 제공한다. 데이터 전송의 신뢰성이나 순서를 보장하지 않는다. 소켓은 `java.net.DatagramSocket` 클래스로 표현된다.
+
+
+**TCP 서버 프로그램 개발**
+```java
+ServerSocket serverSocket = new ServerSocket(50001);
+Socket socket = serverSocket.accept();
+
+InetSocketAddress isa = (InetSocketAddress) socket.getRemoteSocketAddress();
+String portNo = isa.getPort();
+
+serverSocket.close();
+```
+
+**TCP 클라이턴트에서 서버에 연결 요청**
+
+```java
+Socket socket = new Socket("IP", 50001);
+Socket socket = new Socket(New InetAddress.getByName("domainName", 50001);
+
+socket = new Socket();
+socket.commect(new InetSocketAddress("domainName", 500011));
+
+try {
+	// socket 생성과 동시에 localhost의 50001 port로 연결 요청
+	Socket socket = new Socket("IP", 50001);
+	System.out.println("클라이언트 연결 성공");
+	
+	socket.close();
+	System.out.println("클라이언트 연결 끊음");
+} catch (UnknownHostException e) {
+	// ip 표기 방법이 잘못되었을 경우
+} catch (IOException e) {
+	// ip와 port로 서버에 연결할 수 없는 경우우
+}
+
+```
+
 - UDP 네트워킹
+
+
+> [!NOTE] 전송용 프로토콜 UDP
+> TCP는 데이터 유실이 일어났을 때 감지하고 재전송하는 매커니즘을 가지고 있지만 UDP는 이러한 메커니즘이 포함되어 있지 않다. UDP는 신뢰성 없는 비연결형 프로토콜이기 때문이다. 한 컷 정도의 손실이 문제 없는 실시간 영상 스트리밍의 경우 신뢰도 보다 속도가 중요하기 때문에 UDP를 사용할 수 있다.
+
+
+```java
+DatagramSocket datagramSocket = new DatagramSocket(50001);
+```
+
 - 서버의 동시 요청 처리
 - JSON 데이터 형식
 - TCP 채팅 프로그램
 
 
-### 데이터베이스 입출력
-
-- JDBC 개요
-- DBMS 설치
-- Client Tool 설치
-- DB 구성
-- DB 연결
-- 데이터 저장
-- 데이터 수정
-- 데이터 삭제
-- 데이터 읽기
-- 프로시저와 함수 호출
-- 트랜잭션 처리
-- 게시판 구현
 
 
 
