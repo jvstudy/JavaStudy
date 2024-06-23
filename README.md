@@ -38,12 +38,6 @@
 <br/>
 
 
-<br/>
-
-## PR 방식
-
-- 자유
-
 <br/><br/><br/>
   
 ## Commit Message Convention
@@ -65,7 +59,7 @@
 - 수익 구조 창출에 대한 계획
 
 
-<br/>
+<br/><br/><br/>
 
 
 ## contributor
