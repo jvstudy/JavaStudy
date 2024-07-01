@@ -37,33 +37,21 @@
 
 <br/>
 
-
-<br/><br/><br/>
   
-## Commit Message Convention
+### Commit Message Convention
 
 - [스터디한 주] commit message : [1주차] 자바 변수
 
 > 2주차에 1주차 스터디 내용을 커밋할 경우 `[1주] 변수명 변경` 으로 작성해 주시면 됩니다.
 
-<br/><br/><br/>
-
-
-## 프로젝트
-
-- 프로젝트 제목/내용
-- 페이지 개수 및 간단한 기능 설명
-- 사용할 기술 (front-react,redux,,,,,, back-jpa/mysql ....) 등
-- 간단한 구현 일정
-- 예상 운영 방식
-- 수익 구조 창출에 대한 계획
 
 
 <br/><br/><br/>
 
 
 ## contributor
-비프, Jay, 하리보, 테스커, GU, 잡잡
+[1기] 비프, 하리보, Jay <br/>
+[2기] 비프, 하리보, Jay, 테스커, GU, 잡잡
 
 <br/><br/><br/>
 
