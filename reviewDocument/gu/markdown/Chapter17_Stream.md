@@ -178,7 +178,662 @@ public class StreamPipLineExample {
 `BaseStream`에는 모든 스트림에서 사용할 수 있는 공통 메소드들이 정의되어 있다. 
 `Stream`은 객체 요소를 처리하는 스트림이고, `IntStream`, `LongStream`, `DoubleStream`은 각각 기본 타입인 `int`, `long`, `double` 요소를 처리하는 스트림이다.
 
+| 리턴 타입                                                 | 메소드(매개변수)                                                                                                                                                                                                  | 소스                  |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| Stream\<T>                                            | java.util.Collection.stream()<br>java.util.Collection.parallelStream()                                                                                                                                     | List 컬렉션<br>Set 컬렉션 |
+| Stream\<T><br>IntStream<br>LongStream<br>DoubleStream | Arrays.stream(T[ ]),    Stream.of(T[ ])<br>Arrays.stream(int[ ]),     IntStream.of(int[ ])<br>Arrays.stream(long[ ]),    LongStream.of(long[ ])<br>Arrays.stream(double[ ]),    DoubleStream.of(double[ ]) | <br>배열              |
+| IntStream                                             | IntStream.range(int, int)<br>IntStream.rangeClosed(int, int)                                                                                                                                               | int 범위              |
+| LongStream                                            | LongStream.range(long, long)<br>LongStream.rangeClosed(long, long)                                                                                                                                         | long 범위             |
+| Stream\<Path>                                         | Files.list(Path)                                                                                                                                                                                           | 디렉토리                |
+| Stream\<String>                                       | Files.lines(Path, Charset)                                                                                                                                                                                 | 텍스트 파일              |
+| DoubleStream<br>IntStream<br>LongStream               | Random.doubles(...)<br>Random.ints()<br>Random.longs()                                                                                                                                                     | <br>랜덤 수            |
 
+
+### 컬렉션으로부터 스트림 얻기
+
+`java.util.Collection`인터페이스는 스트림과 `parallelStream()` 메소드를 가지고 있기 때문에 자식 인터페이스인 List와 Set 인터페이스를 구현한 모든 컬렉션에서 객체 스트림을 얻을 수 있다.
+다음은 List\<Product>컬렉션에서 Product 스트림을 얻는 방법이다.
+
+
+`Product.java`
+```java
+public class Product {  
+    private int pno;  
+    private String name;  
+    private String company;  
+    private int price;  
+  
+    public Product(int pno, String name, String company, int price) {  
+        this.pno = pno;  
+        this.name = name;  
+        this.company = company;  
+        this.price = price;  
+    }  
+  
+    public int getPno() {  
+        return pno;  
+    }  
+  
+    public String getName() {  
+        return name;  
+    }  
+  
+    public String getCompany() {  
+        return company;  
+    }  
+  
+    public int getPrice() {  
+        return price;  
+    }  
+  
+    @Override  
+    public String toString() {  
+        return new StringBuilder()  
+                .append("{")  
+                .append("pno:" + pno + ", ")  
+                .append("name:" + name + ", ")  
+                .append("company:" + company + ", ")  
+                .append("price:" + price)  
+                .append("}")  
+                .toString();  
+    }  
+}
+```
+`StreamExample.java`
+```java
+import java.util.ArrayList;  
+import java.util.stream.Stream;  
+  
+public class StreamExample {  
+    public static void main(String[] args) {  
+        //List 컬렉션 생성  
+        ArrayList<Product> list = new ArrayList<>();  
+        for (int i = 1; i <= 5; i++) {  
+            Product product = new Product(i, "상품" + i, "멋진 회사", (int) (10000 * Math.random()));  
+            list.add(product);  
+        }  
+  
+        //객체 스트림 얻기  
+        Stream<Product> stream = list.stream();  
+        stream.forEach(p -> System.out.println(p));  
+    }  
+}
+```
+`[실행결과]`
+```
+{pno:1, name:상품1, company:멋진 회사, price:511}
+{pno:2, name:상품2, company:멋진 회사, price:3418}
+{pno:3, name:상품3, company:멋진 회사, price:7800}
+{pno:4, name:상품4, company:멋진 회사, price:3086}
+{pno:5, name:상품5, company:멋진 회사, price:580}
+```
+
+
+
+### 배열로부터 스트림 얻기
+
+`java.util.Arrays`클래스를 이용하면 다양한 종류의 배열로부터 스트림을 얻을 수 있다.
+다음은 문자열 배열과 정수 배열로부터 스트림을 얻는 방법이다.
+`StreamExample.java`
+```java
+import java.util.Arrays;  
+import java.util.stream.IntStream;  
+import java.util.stream.Stream;  
+  
+public class StreamExample {  
+    public static void main(String[] args) {  
+        String[] strArray = {"홍길동", "가나다", "마바사"};  
+        Stream<String> strStream = Arrays.stream(strArray);  
+        strStream.forEach(item -> System.out.print(item + ","));  
+        System.out.println();  
+  
+        int[] intArray = {1, 2, 3, 4, 5};  
+        IntStream intStream = Arrays.stream(intArray);  
+        intStream.forEach(item -> System.out.print(item + ","));  
+        System.out.println();  
+    }  
+}
+```
+`[실행결과]`
+```
+홍길동,가나다,마바사,
+1,2,3,4,5,
+```
+
+
+### 숫자 범위로부터 스트림 얻기
+
+IntStream 또는 LongStream의 정적 메소드인 range()와 rangeClosed() 메소드를 이용하면 특정 범위의 정수 스트림을 얻을 수 있다. 첫 번째 매개값은 시작 수이고 두 번째 매개값은 끝 수 인데, 끝 수를 포함하지 않으면 `range()`, 포함하면 `rangeClosed()`를 사용한다.
+`StreamExample.java`
+```java
+import java.util.stream.IntStream;  
+  
+public class StreamExample {  
+    public static int sum;  
+  
+    public static void main(String[] args) {  
+        IntStream stream = IntStream.rangeClosed(1, 100);  
+        stream.forEach(a -> sum += a);  
+        System.out.println("총합: "+ sum);  
+    }  
+}
+```
+`[실행결과]`
+```
+총합: 5050
+```
+
+
+### 파일로부터 스트림 얻기
+
+`java.nio.file.Files`의 lines() 메소드를 이용하면 텍스트 파일의 행 단위 스크림을 얻을 수 있다. 
+다음은 `data.txt` 파일을 한 행씩 읽고 상품 정보를 출력하기 위해 Files의 lines()메소드를 이용하는 방법이다. - 같은 패키지에 `data.txt`파일 저장
+`StreamExample.java`
+```java
+import java.nio.charset.Charset;  
+import java.nio.file.Files;  
+import java.nio.file.Path;  
+import java.nio.file.Paths;  
+import java.util.stream.Stream;  
+  
+public class StreamExample {  
+    public static void main(String[] args) throws Exception {  
+        Path path = Paths.get(StreamExample.class.getResource("data.txt").toURI());  
+        Stream<String> stream = Files.lines(path, Charset.defaultCharset());  
+        stream.forEach(line -> System.out.println(line));  
+        stream.close();  
+    }  
+}
+```
+`[실행결과]`
+```
+{pno:1, name:상품1, company:멋진 회사, price:511}
+{pno:2, name:상품2, company:멋진 회사, price:3418}
+{pno:3, name:상품3, company:멋진 회사, price:7800}
+{pno:4, name:상품4, company:멋진 회사, price:3086}
+{pno:5, name:상품5, company:멋진 회사, price:580}
+```
+
+
+<br>
+
+## 요소 걸러내기(필터링)
+
+> 필터링은 요소를 걸러내는 중간 처리 기능이다. 필터링 메소드에는 `distinct()`와 `filter()`가 있다.
+
+
+| 리턴 타입                                             | 메소드(매개변수)                                                                                                           | 설명                                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Stream<br>IntStream<br>LongStream<br>DoubleStream | distinct()<br><br>filter(Predicate\<T>)<br>filter(IntPredicate)<br>filter(LongPredicate)<br>filter(DoublePredicate) | - 중복 제거<br><br>- 조건 필터링<br>- 매개 타입은 요소타입에 따른<br>함수형 인터페이스이므로 람다식으로 작성 가능 |
+
+`distinct()` 메서드는 요소의 중복을 제거한다. 객체 스트림(Stream)일 경우, `equals()` 메소드의 리턴값이 true이면 동일한 요소로 판단한다. IntStream, LongStream, DoubleStream은 같은 값일 경우 중복을 제거한다.
+
+![](../img/ch17/17-4.jpeg)
+
+`filter()`메소드는 매개값으로 주어진 `Predicate`가 true를 리턴하는 요소만 필터링한다.
+
+![](../img/ch17/17-5.jpeg)
+
+`Predicate`는 함수형 인터페이스이다.
+
+| 인터페이스           | 추상 메소드                     | 설명           |
+| --------------- | -------------------------- | ------------ |
+| Predicate\<T>   | boolean test(T t)          | 객체 T를 조사     |
+| IntPredicate    | boolean test(int value)    | int 값을 조사    |
+| LongPredicate   | boolean test(long value)   | long 값을 조사   |
+| DoublePredicate | boolean test(double value) | double 값을 조사 |
+
+모든 `Predicate`는 매개값을 조사한 후 boolean을 리턴하는 `test()` 메소드를 가지고 있다.
+
+```java
+T -> { ... return true}
+//또는
+T -> true; // return 문만 있을 경우 중괄호와 return 키워드 생략 가능
+```
+
+다음은 이름 List에서 중복된 이름을 제거하고 출력하여 특정 성만 필터링해서 출력하는 예제이다.
+`FilteringExample.java`
+```java
+import java.util.ArrayList;  
+import java.util.List;  
+  
+public class FilteringExample {  
+    public static void main(String[] args) {  
+        //List 컬렉션 생성  
+        List<String> list = new ArrayList<>();  
+        list.add("홍길동");  
+        list.add("홍홍홍");  
+        list.add("가나다");  
+        list.add("마바사");  
+        list.add("홍길동");  
+  
+        //중복 요소 제거  
+        list.stream()  
+                .distinct()  
+                .forEach(n -> System.out.println(n));  
+        System.out.println();  
+  
+        //홍으로 시작하는 요소만 필터링  
+        list.stream()  
+                .filter(n -> n.startsWith("홍"))  
+                .forEach(n -> System.out.println(n));  
+        System.out.println();  
+  
+        //중복 요소를 먼저 제거하고, 홍으로 시작하는 요소만 필터링  
+        list.stream()  
+                .distinct()  
+                .filter(n -> n.startsWith("홍"))  
+                .forEach(n -> System.out.println(n));  
+    }  
+}
+```
+`[실행결과]`
+```
+홍길동
+홍홍홍
+가나다
+마바사
+
+홍길동
+홍홍홍
+홍길동
+
+홍길동
+홍홍홍
+```
+
+
+<br>
+
+## 요소 변환(매핑)
+
+> 매핑(mapping)은 스트림의 요소를 다른 요소로 변환하는 중간 처리 기능이다. 매핑 메소드는 `mapXxx()`, `asDoubleStream()`, `asLongStream()`, `boxed()`, `flatMapXxx()`등이 있다.
+
+### 요소를 다른 요소로 변환
+
+`mapXxx()`메소드는 요소를 다른 요소로 변환한 새로운 스트림을 리턴한다. 
+다음 그림처럼 원래 스트림의 A 요소는 C 요소로, B 요소는 D 요소로 변환해서 C, D 요소를 가지는 새로운 스트림이 생성된다.
+![](../img/ch17/17-6.jpeg)
+
+- `mapXxx()`메소드의 종류
+
+| 리턴 타입                                                   | 메소드(매개변수)                                                                                                                                 | 요소 → 변환요소                                                      |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Stream\<R>                                              | map(Function\<T, R>)                                                                                                                      | T → R                                                          |
+| IntStream<br>LongStream<br>DoubleStream                 | mapToInt(ToIntFunction\<T>)<br>mapToLong(ToLongFunction\<T>)<br>mapToDouble(ToDoubleFunction\<T>)                                         | T → int<br>T → long<br>T → double                              |
+| <br>Stream\<U><br>                                      | mapToObj(IntFunction\<U>)<br>mapToObj(LongFunction\<U>)<br>mapToObj(DoubleFunction\<U>)                                                   | int → U<br>long → U<br>double → U                              |
+| DoubleStream<br>DoubleStream<br>IntStream<br>LongStream | mapToDouble(IntToDoubleFunction)<br>mapToDouble(LongToDoubleFunction)<br>mapToInt(DoubleToIntFunction)<br>mapToLong(DoubleToLongFunction) | int → double<br>long → double<br>double → int<br>double → long |
+
+- 매개타입인 `Function`(함수형 인터페이스) 종류
+
+| 리턴 타입                | 메소드(매개변수)                        | 요소 → 변환 요소    |
+| -------------------- | -------------------------------- | ------------- |
+| Function\<T, R>      | R apply(T t)                     | T → R         |
+| IntFunction\<R>      | R apply(int value)               | int → R       |
+| LongFunction\<R>     | R apply(long value)              | long → R      |
+| DoubleFunction\<R>   | R apply(double value)            | double → R    |
+| ToIntFunction\<T>    | int applyAsInt(T value)          | T → int       |
+| ToLongFunction\<T>   | long applyAsLong(T value)        | T → long      |
+| ToDubleFunction\<T>  | double applyAsDouble(T value)    | T → double    |
+| IntToLongFunction    | long applyAsLong(int value)      | int → long    |
+| IntToDoubleFunction  | double applyAsDouble(int value)  | int → double  |
+| LongToIntFunction    | int applyAsInt(long value)       | long → int    |
+| LongToDoubleFunction | double applyAsDouble(long value) | long → double |
+| DoubleToIntFunction  | int applyAsInt(double value)     | double → int  |
+| DoubleToLongFunction | long applyAsLong(double value)   | double → long |
+
+모든 `Function`은 매개값을 리턴값으로 매핑(변환)하는 `applyXxx()` 메소드를 가지고 있다.
+
+```java
+T -> {... return R;}
+//또는
+T -> R;  // return 문만 있을 경우 중괄호와 return 키워드 생략 가능
+```
+
+다음은 Student 스트림을 score 스트림으로 변환하고 점수를 출력하는 예제이다.
+`Student.java`
+```java
+public class Student {  
+    private String name;  
+    private int score;  
+  
+    public Student(String name, int score) {  
+        this.name = name;  
+        this.score = score;  
+    }  
+  
+    public String getName() {  
+        return name;  
+    }  
+  
+    public int getScore() {  
+        return score;  
+    }  
+}
+```
+`MapExample.java`
+```java
+import java.util.ArrayList;  
+import java.util.List;  
+  
+public class MapExample {  
+    public static void main(String[] args) {  
+        //List 컬렉션 생성  
+        List<Student> studentList = new ArrayList<>();  
+        studentList.add(new Student("홍길동", 85));  
+        studentList.add(new Student("홍길동", 92));  
+        studentList.add(new Student("홍길동", 87));  
+  
+        //Student를 score 스트림으로 변환  
+        studentList.stream()  
+                .mapToInt(s -> s.getScore())  
+                .forEach(score -> System.out.println(score));  
+    }  
+}
+```
+`[실행결과]`
+```
+85
+92
+87
+```
+
+기본 타입 간의 변환이거나 기본 타입 요소를 래퍼(Wrapper)객체 요소로 변환하려면 간편 메소드를 사용할 수 있다.
+
+| 리턴 타입                                                | 메소드(매개변수)        | 설명                                              |
+| ---------------------------------------------------- | ---------------- | ----------------------------------------------- |
+| LongStream                                           | asLongStream()   | int → long                                      |
+| DoubleStream                                         | asDoubleStream() | int → double<br>long → double                   |
+| Stream\<Integer><br>Stream\<Long><br>Stream\<Double> | <br>boxed()      | int → Integer<br>long → Long<br>double → Double |
+
+다음은 정수 스트림을 실수 스트림으로 변환하고, 기본 타입 스트림을 래퍼 스트림으로 변환하는 예제이다.
+`MapExample.java`
+```java
+import java.util.Arrays;  
+import java.util.stream.IntStream;  
+  
+public class MapExample {  
+    public static void main(String[] args) {  
+        int[] intArray = {1, 2, 3, 4, 5};  
+  
+        IntStream intStream = Arrays.stream(intArray);  
+        intStream  
+                .asDoubleStream()  
+                .forEach(d -> System.out.println(d));  
+  
+        System.out.println();  
+  
+        intStream = Arrays.stream(intArray);  
+        intStream  
+                .boxed()  
+                .forEach(obj -> System.out.println(obj.intValue()));  
+    }  
+}
+```
+`[실행결과]`
+```
+1.0
+2.0
+3.0
+4.0
+5.0
+
+1
+2
+3
+4
+5
+```
+
+
+### 요소를 복수 개의 요소로 변환
+
+> `flatMapXxx()` 메소드는 하나의 요소를 복수 개의 요소들로 변환한 새로운 스트림을 리턴한다.
+
+원래 스트림의 A 요소를 A1, A2 요소로 변환하고 B 요소를 B1, B2로 변환하면, A1, A2, B1, B2 요소를 가지는 새로운 스트림이 생성된다.
+![](../img/ch17/17-7.jpeg)
+
+- `flatMap()`메소드의 종류
+
+| 리턴 타입        | 메소드(매개변수)                                   | 요소 → 변환 요소            |
+| ------------ | ------------------------------------------- | --------------------- |
+| Stream\<R>   | flatMap(Function\<T, Stream\<R>>)           | T → Stream\<R>        |
+| DoubleStream | flatMap(DoubleFunction\<DoubleStream>)      | double → DoubleStream |
+| IntStream    | flatMap(IntFunction\<IntStream>)            | int → IntStream       |
+| LongStream   | flatMap(LongFunction\<LongStream>)          | long → LongStream     |
+| DoubleStream | flatMapToDouble(Function\<T, DoubleStream>) | T → DoubleStream      |
+| IntStream    | flatMapToInt(Function\<T, IntStream>)       | T → InputStream       |
+| LongStream   | flatMapToLong(Function\<T, LongStream>)     | T → LongStream        |
+
+다음은 문장 스트림을 단어 스트림으로 변환하고, 문자열 숫자 목록 스트림을 숫자 스트림으로 변환하는 예제이다.
+`FlatMappingExample.java`
+```java
+import java.util.ArrayList;  
+import java.util.Arrays;  
+import java.util.List;  
+  
+public class FlatMappingExample {  
+    public static void main(String[] args) {  
+        //문장 스트림을 단어 스트림으로 변환  
+        List<String> list1 = new ArrayList<>();  
+        list1.add("this is java");  
+        list1.add("i am a best developer");  
+        list1.stream().  
+                flatMap(data -> Arrays.stream(data.split(" ")))  
+                .forEach(word -> System.out.println(word));  
+  
+        System.out.println();  
+  
+        //문자열 숫자 목록 스트림을 숫자 스트림으로 변환  
+        List<String> list2 = Arrays.asList("10, 20, 30", "40, 50");  
+        list2.stream()  
+                .flatMapToInt(data -> {  
+                    String[] strArr = data.split(",");  
+                    int[] intArr = new int[strArr.length];  
+                    for (int i = 0; i < strArr.length; i++) {  
+                        intArr[i] = Integer.parseInt(strArr[i].trim());  
+                    }  
+                    return Arrays.stream(intArr);  
+                })  
+                .forEach(number -> System.out.println(number));  
+    }  
+}
+```
+`[실행결과]`
+```
+this
+is
+java
+i
+am
+a
+best
+developer
+
+10
+20
+30
+40
+50
+```
+
+
+<br>
+
+## 요소 정렬
+
+> 정렬은 요소를 오름차순 또는 내림차순으로 정렬하는 중간 처리 기능이다. 
+
+| 리턴 타입        | 메소드(매개변수)              | 설명                              |
+| ------------ | ---------------------- | ------------------------------- |
+| Stream\<T>   | sorted()               | Comparable 요소를 정렬한 새로운 스트림 생성   |
+| Stream\<T>   | sorted(Comparator\<T>) | 요소를 Comparator에 따라 정렬한 새 스트림 생성 |
+| DoubleStream | sorted()               | double 요소를 오름차순으로 정렬            |
+| IntStream    | sorted()               | int 요소를 오름차순으로 정렬               |
+| LongStream   | sorted()               | long 요소를 오름차순으로 정렬              |
+
+
+### Comparable 구현 객체의 정렬
+
+스트림의 요소가 객체일 경우 객체가 Comparable을 구현하고 있어야만 sorted() 메소드를 사용하여 정렬할 수 있다. 그렇지 않은 객체에 sorted() 메소드를 사용하면 `ClassCastException`이 발생한다.
+
+```java
+public Xxx implemetns Comparable {...}
+List<Xxx> list = new ArrayList<>();
+Stream<Xxx> stream = list.stream();
+Stream<Xxx> orderedStream = stream.sorted();
+```
+
+내림차순으로 정렬할 경우 `Comparator.reverseOrder()` 메소드가 리턴하는 Comparator를 매개값으로 제공하면 된다.
+```java
+Steram<Xxx> reverseOrderedStream = stream.sorted(Comparator.reverseOrder());
+```
+
+다음은 Student 스트림을 score 기준으로 오름차순 또는 내림차순으로 정렬한 새로운 Student 스트림을 생성하는 예제이다. 정렬을 위해 Student 클래스가 Comparable을 구현하고 있다.
+`Student.java`
+```java
+public class Student implements Comparable<Student> {  
+    private String name;  
+    private int score;  
+  
+    public Student(String name, int score) {  
+        this.name = name;  
+        this.score = score;  
+    }  
+  
+    public String getName() {  
+        return name;  
+    }  
+  
+    public int getScore() {  
+        return score;  
+    }  
+  
+    @Override  
+    public int compareTo(Student o) {  
+        return Integer.compare(score, o.score);  
+    }  
+}
+```
+`SortingExample.java`
+```java
+import java.util.ArrayList;  
+import java.util.Comparator;  
+import java.util.List;  
+  
+public class SortingExample {  
+    public static void main(String[] args) {  
+        //List 컬렉션 생성  
+        List<Student> studentList = new ArrayList<>();  
+        studentList.add(new Student("홍길동", 30));  
+        studentList.add(new Student("가나다", 10));  
+        studentList.add(new Student("김자바", 30));  
+  
+        //점수를 기준으로 오름차순으로 정렬한 새 스트림 얻기  
+        studentList.stream()  
+                .sorted()  
+                .forEach(s -> System.out.println(s.getName() + ": " + s.getScore()));  
+        System.out.println();  
+  
+        //점수를 기준으로 내림차순으로 정렬한 새 스트림 얻기  
+        studentList.stream()  
+                .sorted(Comparator.reverseOrder())  
+                .forEach(s -> System.out.println(s.getName() + ": " + s.getScore()));  
+    }  
+}
+```
+`[실행결과]`
+```
+가나다: 10
+홍길동: 30
+김자바: 30
+
+홍길동: 30
+김자바: 30
+가나다: 10
+```
+
+
+
+### Comparator를 이용한 정렬
+
+요소 객체가 `Comparable`을 구현하고 있지 않다면, 비교자를 제공하면 요소를 정렬시킬 수 있다.
+비교자는 `Comparator` 인터페이스를 구현한 객체를 말한다.
+```java
+sorted((o1, o2) -> { ... })
+```
+중괄호 안에는 o1이 o2보다 작으면 음수, 같으면 0, 크면 양수를 리턴하도록 작성하면 된다. o1과 o2가 정수일 경우에는 `Integer.compare(o1, o2)`를, 실수일 경우에는 `Double.compare(o1, o2)`를 호출해서 리턴값을 리턴해도 된다.
+
+다음은 Student 클래스가 Comparable을 구현하고 있지 않기에 비교자를 람다식으로 제공한 예제이다.
+`Student.java`
+```java
+public class Student {  
+    private String name;  
+    private int score;  
+  
+    public Student(String name, int score) {  
+        this.name = name;  
+        this.score = score;  
+    }  
+  
+    public String getName() {  
+        return name;  
+    }  
+  
+    public int getScore() {  
+        return score;  
+    }  
+}
+```
+`SortingExample.java`
+```java
+import java.util.ArrayList;  
+import java.util.List;  
+  
+public class SortingExample {  
+    public static void main(String[] args) {  
+        //List 컬렉션 생성  
+        List<Student> studentList = new ArrayList<>();  
+        studentList.add(new Student("홍길동", 40));  
+        studentList.add(new Student("가나다", 10));  
+        studentList.add(new Student("마바사", 20));  
+  
+        //점수를 기준으로 오름차순으로 정렬한 새 스트림 얻기  
+        studentList.stream()  
+                .sorted((s1, s2) -> Integer.compare(s1.getScore(), s2.getScore()))  
+                .forEach(s -> System.out.println(s.getName() + ": " + s.getScore()));  
+        System.out.println();  
+  
+        //점수를 기준으로 내림차순으로 정렬한 새 스트림 얻기  
+        studentList.stream()  
+                .sorted((s1, s2) -> Integer.compare(s2.getScore(), s1.getScore()))  
+                .forEach(s -> System.out.println(s.getName() + ": " + s.getScore()));  
+  
+    }  
+}
+```
+`[실행결과]`
+```
+가나다: 10
+마바사: 20
+홍길동: 40
+
+홍길동: 40
+마바사: 20
+가나다: 10
+```
+
+
+<br>
+
+## 요소를 하나씩 처리(루핑)
+
+> 루핑(looping)은 스트림에서 요소를 하나씩 반복해서 가져와 처리하는 것을 말한다. 루핌 메소드에는 `peek()`과 `forEach()`가 있다.
+
+| 리턴 타입                                   | 메소드(매개변수)                                                                                             | 설명                          |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------- |
+| Stream\<T><br>IntStream<br>DoubleStream | peek(Consumer\<? super T)<br>peek(IntConsumer action)<br>peek(DoubleConsumer action)                  | T 반복<br>int 반복<br>double 반복 |
+| <br>void                                | forEach(Consumer\<? super T> action)<br>forEach(IntConsumer action)<br>forEach(DoubleConsumer action) | T 반복<br>int 반복<br>double 반복 |
 
 
 
