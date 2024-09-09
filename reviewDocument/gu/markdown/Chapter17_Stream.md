@@ -45,6 +45,7 @@ public class StreamExample {
 	2) 람다식으로 다양한 요소 처리를 정의할 수 있다.
 	3) 중간 처리와 최종 처리를 수행하도록 파이프 라인을 형성할 수 있다.
 
+
 <br>
 
 ## 내부 반복자
@@ -828,29 +829,496 @@ public class SortingExample {
 
 ## 요소를 하나씩 처리(루핑)
 
-> 루핑(looping)은 스트림에서 요소를 하나씩 반복해서 가져와 처리하는 것을 말한다. 루핌 메소드에는 `peek()`과 `forEach()`가 있다.
+> 루핑(looping)은 스트림에서 요소를 하나씩 반복해서 가져와 처리하는 것을 말한다. 루핑 메소드에는 `peek()`과 `forEach()`가 있다.
 
 | 리턴 타입                                   | 메소드(매개변수)                                                                                             | 설명                          |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------- |
 | Stream\<T><br>IntStream<br>DoubleStream | peek(Consumer\<? super T)<br>peek(IntConsumer action)<br>peek(DoubleConsumer action)                  | T 반복<br>int 반복<br>double 반복 |
 | <br>void                                | forEach(Consumer\<? super T> action)<br>forEach(IntConsumer action)<br>forEach(DoubleConsumer action) | T 반복<br>int 반복<br>double 반복 |
 
+`peek()`과 `forEach()`는 동일하게 요소를 루핑하지만 `peek()`은 중간 처리 메소드이고, `forEach()`는 최종 처리 메소드이다. 따라서 `peek()`은 최종 처리가 뒤에 붙지 않으면 동작하지 않는다. 
+
+매개 타입인 `Consumer`는 함수형 인터페이스이다.
+
+| 인터페이스명         | 추상 메소드                    | 설명                |
+| -------------- | ------------------------- | ----------------- |
+| Consumer\<T>   | void accept(T t)          | 매개값 T를 받아 소비      |
+| IntConsumer    | void accept(int value)    | 매개값 int를 받아 소비    |
+| LongConsumer   | void accept(long value)   | 매개값 long을 받아 소비   |
+| DoubleConsumer | void accept(double value) | 매개값 double을 받아 소비 |
+
+모든 `Consumer`는 매개값을 처리(소비)하는 `accept()` 메소드를 가지고 있다.
+```java
+T -> {...}
+또는
+T -> 실행문; //하나의 실행문만 있을 경우 중괄호 생략
+```
+
+다음은 정수 짝수 스트림에서 요소를 하나씩 반복해서 출력시키는 예시이다.
+`LoopingExample.java`
+```java
+public class LoopingExample {  
+    public static void main(String[] args) {  
+        int[] intArr = {1, 2, 3, 4, 5};  
+  
+        //잘못 작성한 경우  
+        Arrays.stream(intArr)  
+                .filter(a -> a % 2 == 0)  
+                .peek(n -> System.out.println(n)); //최종처리가 없으므로 동작하지 않음  
+  
+        int total = Arrays.stream(intArr)  
+                .filter(a -> a % 2 == 0)  
+                .peek(n -> System.out.println(n))  
+                .sum();//최종처리  
+        System.out.println("총합 :  " + total + "\n");  
+  
+        //최종 처리 메소드 forEach()를 이용해서 반복 처리  
+        Arrays.stream(intArr)  
+                .filter(a -> a%2==0)  
+                .forEach(n -> System.out.println(n)); // 최종 처리이므로 동작함  
+    }  
+}
+```
+`[실행결과]`
+```
+2
+4
+총합 :  6
+
+2
+4
+```
+
+
+<br>
+
+## 요소 조건 만족 여부(매칭)
+
+> 매칭은 요소들이 특정 조건에 마족하는지 여부를 조사하는 최종 처리 기능이다. 
+
+| 리턴 타입       | 메소드(매개변수)                                                                                                                                             | 조사 내용                    |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| <br>boolean | allMatch(Predicate\<T> predicate)<br>allMatch(IntPredicate predicate)<br>allMatch(LongPredicate predicate)<br>allMatch(DoublePredicate predicate)     | <br>모든 요소가 만족하는지 여부      |
+| <br>boolean | anyMatch(Predicate\<T> predicate)<br>anyMatch(IntPredicate predicate)<br>anyMatch(LongPredicate predicate)<br>anyMatch(DoublePredicate predicate)     | <br>최소한 하나의 요소가 만족하는지 여부 |
+| <br>boolean | noneMatch(Predicate\<T> predicate)<br>noneMatch(IntPredicate predicate)<br>noneMatch(LongPredicate predicate)<br>noneMatch(DoublePredicate predicate) | <br>모든 요소가 만족하지 않는지 여부   |
+
+`allMatch()`, `anyMatch()`, `noneMatch()` 메소드는 매개값으로 주어진 `Predicate`(`Predicate`에 대한 설명은 [`요소 걸러내기(필터링)`](#요소-걸러내기필터링) 파트 참조)가 리턴하는 값에 따라 true 또는 false를 리턴한다. 
+
+다음 예제는 정수 스크림에서 모든 요소가 2의 배수인지, 하나라도 3의 배수가 존재하는지, 또는 모든 요소가 3의 배수가 아닌지를 조사한다.
+`MatchingExample.java`
+```java
+public class MatchingExample {  
+    public static void main(String[] args) {  
+        int[] intArr = {2, 4, 6};  
+  
+        boolean result = Arrays.stream(intArr)  
+                .allMatch(a -> a % 2 == 0);  
+        System.out.println("모두 2의 배수인가? " + result);  
+  
+        result = Arrays.stream(intArr)  
+                .anyMatch(a -> a % 3 == 0);  
+        System.out.println("하나라도 3의 배수가 있는가? " + result);  
+  
+        result = Arrays.stream(intArr)  
+                .noneMatch(a -> a % 3 == 0);  
+        System.out.println("3의 배수가 없는가? "+result);  
+    }  
+}
+```
+`[실행결과]`
+```
+모두 2의 배수인가? true
+하나라도 3의 배수가 있는가? true
+3의 배수가 없는가? false
+```
+
+
+<br>
+
+## 요소 기본 집계
+
+> `집계(Aggregate)`는 최종 처리 기능으로 요소들을 처리해서 카운팅, 합계, 평균값, 최대값, 최소값등과 같이 하나의 값으로 산출하는 것을 말한다. 즉, 대량의 데이터를 가공해서 하나의 값으로 축소하는 `리덕션(Reduction)`이라고 볼 수 있다.
+
+### 스트림이 제공하는 기본 집계
+
+> 스트림은 카운팅, 최대, 최소, 평균, 합계 등을 처리하는 최종 처리 메소드를 제공한다.
+
+| 리턴 타입                       | 메소드(매개변수)                    | 설명      |
+| --------------------------- | ---------------------------- | ------- |
+| long                        | count()                      | 요소 개수   |
+| OptionalXXX                 | findFirst()                  | 첫 번째 요소 |
+| Optional\<T><br>OptionalXXX | max(Comparator\<T>)<br>max() | 최대 요소   |
+| Optional\<T><br>OptionalXXX | min(Comparator\<T>)<br>min() | 최소 요소   |
+| OptionalDouble              | average()                    | 요소 평균   |
+| int, long, double           | sum()                        | 요소 총합   |
+
+집계 메소드가 리턴하는 `OptionalXXX`는 `Optional`, `OptionalDouble`, `OptionalInt`, `OptionalLong` 클래스를 말한다. 이들은 최종값을 저장하는 객체로 `get()`, `getAsDouble()`, `getAsInt()`, `getAsLong()`을 호출하면 최종값을 얻을 수 있다.
+`AggregateExample.java`
+```java
+public class AggregateExample {  
+    public static void main(String[] args) {  
+        //정수 배열  
+        int[] arr = {1, 2, 3, 4, 5};  
+  
+        //카운팅  
+        long count = Arrays.stream(arr)  
+                .filter(n -> n % 2 == 0)  
+                .count();  
+        System.out.println("2의 배수 개수: " + count);  
+  
+        //총합  
+        long sum = Arrays.stream(arr)  
+                .filter(n -> n % 2 == 0)  
+                .sum();  
+        System.out.println("2의 배수의 합: " + sum);  
+  
+        //평균  
+        double avg = Arrays.stream(arr)  
+                .filter(n -> n % 2 == 0)  
+                .average()  
+                .getAsDouble();  
+        System.out.println("2의 배수의 평균: " + avg);  
+  
+        //최대값  
+        int max = Arrays.stream(arr)  
+                .filter(n -> n % 2 == 0)  
+                .max()  
+                .getAsInt();  
+        System.out.println("최대값: " + max);  
+  
+        //최소값  
+        int min = Arrays.stream(arr)  
+                .filter(n -> n % 2 == 0)  
+                .min()  
+                .getAsInt();  
+        System.out.println("최소값: " + min);  
+  
+        //첫 번째 요소  
+        int first = Arrays.stream(arr)  
+                .filter(n -> n % 3 == 0)  
+                .findFirst()  
+                .getAsInt();  
+        System.out.println("첫 번째 3의 배수: " + first);  
+    }  
+}
+```
+`[실행결과]`
+```
+2의 배수 개수: 2
+2의 배수의 합: 6
+2의 배수의 평균: 3.0
+최대값: 4
+최소값: 2
+첫 번째 3의 배수: 3
+```
+
+
+### Optional 클래스
+
+> `Optional`, `OptionalDouble`, `OptionalInt`, `OptionalLong`클래스는 단순히 집계값만 저장하는 것이 아니라, 집계값이 존재하지 않을 경우 디폴트 값을 설정하거나 집계값을 처리하는 Consumer를 등록할 수 있다. 
+
+다음은 `Optional`에서 제공하는 메소드이다.
+
+| 리턴 타입                      | 메소드(매개변수)                                                                                             | 설명                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------- |
+| boolean                    | isPresent()                                                                                           | 집계값이 있는지 여부                  |
+| T<br>double<br>int<br>long | orElse(T)<br>orElse(double)<br>orElse(int)<br>orElse(long)                                            | <br>집계값이 없을 경우 디폴트 값 설정      |
+| <br>void                   | ifPresent(Consumer)<br>ifPresent(DoubleConsumer)<br>ifPresent(IntConsumer)<br>ifPresent(LongConsumer) | <br>집계값이 있을 경우 Consumer에서 처리 |
+
+컬렉션의 요소는 동적으로 추가되는 경우가 많다. 만약 컬렉션에 요소가 존재하지 않으면 집계 값을 산출할 수 없으므로 `NoSuchElementException` 예외가 발생한다. 하지만 위의 메소드를 사용하면 예외 발생을 방지할 수 있다.
+
+ 예를 들어 평균을 구하는 `average`를 최종 처리에서 사용할 경우, 다음 3가지 방법으로 요소(집계값)가 없는 경우를 대비할 수 있다.
+#### 예시) `average`를 최종 처리에서 사용할 때 요소(집계값)가 없는 경우를 대비하는 3가지 방법
+##### 1) `isPresent()` 메소드가 true를 리턴할 때만 집계값을 얻는다.
+```java
+OptionalDouble optinal = stream
+.average();
+if(optional.isPresent()){
+	System.out.println("평균: " + optional.getAsDouble());
+} else {
+	System.out.println("평균: 0.0");
+}
+```
+
+##### 2) `orElse()`메소드로 집계값이 없을 경우를 대비해서 디폴트 값을 정해놓는다.
+```java
+double avg = stream
+.average()
+.orElse(0.0);
+System.out.println("평균: " + avg);
+```
+
+##### 3) `ifPresent()` 메소드로 집계값이 있을 경우에만 동작하는 Consumer람다식을 제공한다.
+```java
+stream
+	.average()
+	.ifPresent(a -> System.out.println("평균: " + a));
+```
 
 
 
+<br>
+
+## 요소 커스텀 집계
+
+> 스트림은 기본 집계 메소드인 sum(), average(), count(), max(), min()을 제공하지만, 다양한 집계 결과물을 만들 수 있도록 `reduce()` 메소드도 제공한다.
+
+| 인터페이스        | 리턴타입                     | 메소드(매개변수)                                                                                    |
+| ------------ | ------------------------ | -------------------------------------------------------------------------------------------- |
+| Stream       | Optional\<T><br>T        | reduce(BinaryOperator\<T> accumulator)<br>reduce(T identity, BinaryOperator\<T> accumulator) |
+| IntStream    | OptionalInt<br>int       | reduce(IntBinaryOperator op)<br>reduce(int identity, IntBinaryOperator op)                   |
+| LongStream   | OptionalLong<br>long     | reduce(LongBinaryOperator op)<br>reduce(long identity, LongBinaryOperator op)                |
+| DoubleStream | OptionalDouble<br>double | reduce(DoubleBinaryOperator op)<br>reduce(double identity, DoubleBinaryOperator op)          |
+
+매개값인 `BinaryOperator`는 함수형 인터페이스이다. `BinaryOperator`는 두 개의 매개값을 받아 하나의 값을 리턴하는 `apply()`메소드를 가지고 있다.
+```java
+(a, b) -> {... return 값;}
+또는
+(a, b) -> 값  //return 문만 있을 경우 중괄호와 return 키워드 생략 가능
+```
+
+`reduce()`는 스트림에 요소가 없을 경우 예외가 발생하지만, identity 매개값이 주어지면 이 값을 디폴트 값으로 리턴한다.
+```java
+int sum = stream
+.reduce((ac b) -> a+b)
+.getAsInt();  // 스트림 요소가 없을 경우 NoSuchElementException을 발생시킴
+```
+```java
+int sum = stream
+.reduce(0, (a, b) -> a+b); 
+//스트림 요소가 없을 경우 디폴트 값(identity)인 0을 리턴한다.
+```
+
+다음 예제는 기본 집계 메소드 sum()과 동일한 결과를 산출하는 reduce() 메소드 사용 방법을 보여준다.
+`Student.java`
+```java
+public class Student {  
+    private String name;  
+    private int score;  
+  
+    public Student(String name, int score) {  
+        this.name = name;  
+        this.score = score;  
+  
+    }  
+  
+    public String getName() {  
+        return name;  
+    }  
+  
+    public int getScore() {  
+        return score;  
+    }  
+}
+```
+`ReductionExample.java`
+```java
+public class ReductionExample {  
+    public static void main(String[] args) {  
+        List<Student> studentList = Arrays.asList(  
+                new Student("홍길동", 92),  
+                new Student("감자바", 95),  
+                new Student("가나다", 88)  
+        );  
+  
+        //방법1  
+        int sum1 = studentList.stream()  
+                .mapToInt(Student::getScore)  
+                .sum();  
+  
+        //방법2  
+        Integer sum2 = studentList.stream()  
+                .map(Student::getScore)  
+                .reduce(0, (a, b) -> (a + b));  
+  
+        System.out.println("sum1 = " + sum1);  
+        System.out.println("sum2 = " + sum2);  
+    }  
+}
+```
+`[실행결과]`
+```
+sum1 = 275
+sum2 = 275
+```
+
+
+<br>
+
+## 요소 수집
+
+> 스트림은 요소들을 필터링 또는 매핑한 후 요소들을 수집하는 최종 처리 메소드인 `collect()`를 제공한다. 이 메소드를 이용하면 필요한 요소만 컬렉션에 담을 수 있고, 요소들을 그풉핑한 후에 집계도 할 수 있다.
+
+### 필터링한 요소 수집
+
+> Stream의 `collect(Collector<T, A, R> collector)` 메소드는 필터링 또는 매핑된 요소들을 새로운 컬렉션에 수집하고, 이 컬렉션을 리턴한다. 매개값인 `Collector`는 어떤 요소를 어떤 컬렉션에 수집할 것인지 결정한다.
+
+| 리턴 타입 | 메소드(매개변수)                  | 인터페이스  |
+| ----- | -------------------------- | ------ |
+| R     | collect(Collector<T,A,R> ) | Stream |
+타입 파라미터의 T는 요소, A는 누적기(accumulator) 그리고 R은 요소가 저장될 컬렉션이다.
+풀어서 설명하면 T 요소를 A 누적기가 R에 저장한다는 구조이다.
+
+Collector의 구현 객체는 다음과 같이 Collectors 클래스의 정적 메소드로 얻을 수 있다.
+
+| 리턴 타입                       | 메소드                                                                            | 설명                                         |
+| --------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------ |
+| Collector\<T, ?, List\<T>>  | toList()                                                                       | T를 List에 저장                                |
+| Collector\<T, ?, Set\<T>>   | toSet()                                                                        | T를 Set에 저장                                 |
+| Collector\<T, ?, Map\<K,U>> | toMap(<br>    Function\<T,K> keyMapper,<br>    Function\<T,U> valueMapper<br>) | <br>T를 K와 U로 매핑하여 K를 키로,<br>U를 값으로 Map에 저장 |
+리턴값인 Collector를 보면 A(누적기)가 `?`로 되어 있는데, 이것은 Collector가 List, Set, Map 컬렉션에 요소를 저장하는 방법을 알고 있어 별도의 누적기가 필요 없기 때문이다.
+
+다음 코드는 Student 스트림에서 남학생만 필터링해서 별도의 List로 생성하는 코드이다.
+```java
+List<Student> maleList = totalList.stream()
+	.filter(s->s.getSex().equals("남"))  // 남학생만 필터링
+	.collect(Collectors.toList());
+```
+
+다음은 Student 스트림에서 이름을 키로, 점수를 값으로 갖는 Map 컬렉션을 생성하는 코드이다.
+```java
+Map<String, Integer> map = totalList.stream()
+	.collect(
+		Collectores.toMap(
+			s -> s.getName(),  //Student 객체에서 키가 될 부분 리턴
+			s -> s.getScore()  //Student 객체에서 값이 될 부분 리턴
+		)
+	);
+```
+
+Java 16부터는 좀 더 편리하게 요소 스트림에서 List컬렉션을 얻을 수 있다. 스트림에서 바로 `toList()`메소드를 사용하면된다.
+```java
+List<Student> maleList = totalList.stream()
+	.filter(s->s.getSex().equals("남"))
+	.toList();
+```
+
+다음 예제는 Student 스트림에서 필터링하서 List를 만들고 Map을 만드는 예제이다.
+`Student.java`
+```java
+public class Student {  
+    private String name;  
+    private String sex;  
+    private int score;  
+  
+    public Student(String name, String sex, int score) {  
+        this.name = name;  
+        this.sex = sex;  
+        this.score = score;  
+    }  
+  
+    public String getName() {  
+        return name;  
+    }  
+  
+    public String getSex() {  
+        return sex;  
+    }  
+  
+    public int getScore() {  
+        return score;  
+    }  
+}
+```
+`CollectExample.java`
+```java
+import java.util.ArrayList;  
+import java.util.List;  
+import java.util.Map;  
+import java.util.stream.Collectors;  
+  
+public class CollectExample {  
+    public static void main(String[] args) {  
+        List<Student> totalList = new ArrayList<>();  
+        totalList.add(new Student("홍길동", "남", 92));  
+        totalList.add(new Student("홍길순", "여", 87));  
+        totalList.add(new Student("감자바", "남", 95));  
+        totalList.add(new Student("오해영", "여", 93));  
+  
+        //남학생만 묶어 List 생성  
+        /*List<Student> maleList = totalList.stream()  
+            .filter(s->s.getSex().equals("남"))  
+            .collect(Collectors.toList());*/  // Java 16미만 버전  
+  
+        //Java16 이상 버전  
+        List<Student> maleList = totalList.stream()  
+                .filter(s -> s.getSex().equals("남"))  
+                .toList();  
+  
+        maleList.stream()  
+                .forEach(s -> System.out.println(s.getName()));  
+  
+        System.out.println();  
+  
+        //학생 이름을 키, 점수를 값으로 갖는 Map 생성  
+        Map<String, Integer> map = totalList.stream()  
+                .collect(  
+                        Collectors.toMap(  
+                                s->s.getName(),  
+                                s->s.getScore()  
+                        )  
+                );  
+  
+        System.out.println(map);  
+  
+  
+    }  
+}
+```
+`[실행결과]`
+```
+홍길동
+감자바
+
+{오해영=93, 홍길동=92, 감자바=95, 홍길순=87}
+```
 
 
 
+### 요소 그룹핑
 
+> `collect()` 메소드는 단순히 요소를 수집하는 기능 이외에 컬렉션의 요소들을 그룹핑해서 Map 객체를 생성하는 기능도 제공한다. `Collectors.groupingBy()` 메소드에서 얻은 Collector를 `collect()` 메소드를 호출할 때 제공하면 된다.
 
+| 리턴 타입                          | 메소드                                   |
+| ------------------------------ | ------------------------------------- |
+| Collector\<T,?,Map<K,List<T>>> | groupingBy(Function\<T,K> classifier) |
+`groupingBy()`는 Function을 이용해서 T를 K로 매핑하고, K를 키로 해 List\<T>를 갖는 Map 컬렉션을 생성한다.
 
+다음은 "남", "여"를 키로 설정하고 List\<Student>를 값으로 갖는 Map을 생성하는 코드이다.
+`CollectExample1.java`
+```java
+public class CollectExample1 {  
+    public static void main(String[] args) {  
+        List<Student> totalList = new ArrayList<>();  
+        totalList.add(new Student("홍길동", "남", 92));  
+        totalList.add(new Student("김수영", "여", 87));  
+        totalList.add(new Student("감자바", "남", 95));  
+        totalList.add(new Student("오해영", "여", 93));  
+  
+        Map<String, List<Student>> map = totalList.stream()  
+                .collect(  
+                        Collectors.groupingBy(s->s.getSex())  
+                );  
+  
+        List<Student> maleList = map.get("남");  
+        maleList.stream().forEach(s -> System.out.println(s.getName()));  
+        System.out.println();  
+  
+        List<Student> femaleList = map.get("여");  
+        femaleList.stream().forEach(s-> System.out.println(s.getName()));  
+    }  
+}
+```
+`[실행결과]`
+```
+홍길동
+감자바
 
+김수영
+오해영
+```
 
-
-
-
-
-
+`Collectors.groupingBy()` 메소드는
 
 
 
